@@ -27,8 +27,8 @@
 			this.primaryTextInput = new System.Windows.Forms.TextBox();
 			this.button1 = new System.Windows.Forms.Button();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+			this.primaryTextOutput = new System.Windows.Forms.TextBox();
 			this.button2 = new System.Windows.Forms.Button();
-			this.textBox1 = new System.Windows.Forms.TextBox();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -74,7 +74,7 @@
 			this.tableLayoutPanel1.ColumnCount = 2;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-			this.tableLayoutPanel1.Controls.Add(this.textBox1, 1, 0);
+			this.tableLayoutPanel1.Controls.Add(this.primaryTextOutput, 1, 0);
 			this.tableLayoutPanel1.Controls.Add(this.primaryTextInput, 0, 0);
 			this.tableLayoutPanel1.Controls.Add(this.button1, 0, 1);
 			this.tableLayoutPanel1.Controls.Add(this.button2, 1, 1);
@@ -88,6 +88,24 @@
 			this.tableLayoutPanel1.TabIndex = 4;
 			this.tableLayoutPanel1.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel1_Paint);
 			// 
+			// primaryTextOutput
+			// 
+			this.primaryTextOutput.AutoCompleteCustomSource.AddRange(new string[] {
+            "programa",
+            "iniciar",
+            "terminar.",
+            "leer",
+            "imprimir"});
+			this.primaryTextOutput.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+			this.primaryTextOutput.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
+			this.primaryTextOutput.Location = new System.Drawing.Point(208, 3);
+			this.primaryTextOutput.Multiline = true;
+			this.primaryTextOutput.Name = "primaryTextOutput";
+			this.primaryTextOutput.ReadOnly = true;
+			this.primaryTextOutput.Size = new System.Drawing.Size(199, 221);
+			this.primaryTextOutput.TabIndex = 5;
+			this.primaryTextOutput.Text = "Aquí puede encontrar las notas del analizador";
+			// 
 			// button2
 			// 
 			this.button2.Location = new System.Drawing.Point(208, 230);
@@ -97,23 +115,6 @@
 			this.button2.Text = "Abrir Archivo";
 			this.button2.UseVisualStyleBackColor = true;
 			this.button2.Click += new System.EventHandler(this.button2_Click);
-			// 
-			// textBox1
-			// 
-			this.textBox1.AutoCompleteCustomSource.AddRange(new string[] {
-            "programa",
-            "iniciar",
-            "terminar.",
-            "leer",
-            "imprimir"});
-			this.textBox1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-			this.textBox1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
-			this.textBox1.Location = new System.Drawing.Point(208, 3);
-			this.textBox1.Multiline = true;
-			this.textBox1.Name = "textBox1";
-			this.textBox1.ReadOnly = true;
-			this.textBox1.Size = new System.Drawing.Size(199, 221);
-			this.textBox1.TabIndex = 5;
 			// 
 			// Form1
 			// 
@@ -138,7 +139,7 @@
 		private System.Windows.Forms.Button button1;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
 		private System.Windows.Forms.Button button2;
-		private System.Windows.Forms.TextBox textBox1;
+		private System.Windows.Forms.TextBox primaryTextOutput;
 	}
 }
 

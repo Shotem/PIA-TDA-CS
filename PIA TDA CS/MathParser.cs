@@ -19,8 +19,10 @@ namespace Parser {
 		 * C  -> ( W4 | k
 		 * C' -> S )
 		*/
-		private enum TK { TK_NULL, TK_PLUS, TK_MINUS, TK_STAR, TK_SLASH, TK_LP, TK_RP, TK_POW, TK_CONST };
+		private enum TK { TK_NULL, TK_PLUS, TK_MINUS, TK_STAR, TK_SLASH, TK_LP, TK_RP, TK_POW, TK_CONST, TK_ID };
 		private List<TK> tokens;
+		public List<string> ids = new List<string>(); // Si una ID no ha sido leída o asignada es un error de léxico
+
 
 		public bool Parse(string str) {
 			this.tokens = Tokenizer(str);
@@ -65,6 +67,19 @@ namespace Parser {
 									}
 									i += j - 1;
 									token = TK.TK_CONST;
+								} else if ('a' <= str[i] && str[i] <= 'z') {
+									int j = 0;
+									while (i + j < str.Length && (('a' <= str[i + j] && str[i + j] <= 'z') || ('0' <= str[i + j] && str[i + j] <= '9'))) {
+										j++;
+									}
+									var id = str.Substring(i,j);
+									i += j - 1;
+									if (this.ids.Contains(id)) {
+										token = TK.TK_ID;
+									} else {
+										token = TK.TK_NULL;
+									}
+									
 								}
 								break;
 						}
@@ -100,7 +115,6 @@ namespace Parser {
 				return false;
 			}
 		}
-
 		private bool _X2() {
 			if (this.tokens.Count == 0) return false;
 			if (this.tokens[0] == TK.TK_STAR || this.tokens[0] == TK.TK_SLASH) {
@@ -110,7 +124,6 @@ namespace Parser {
 				return false;
 			}
 		}
-
 		private bool _X3() {
 			if (this.tokens.Count == 0) return false;
 			if (this.tokens.Count > 0 && this.tokens[0] == TK.TK_POW) {
@@ -120,7 +133,6 @@ namespace Parser {
 				return false;
 			}
 		}
-
 		private bool _X4() {
 			if (this.tokens.Count == 0) return false;
 			if (this.tokens[0] == TK.TK_LP) {
@@ -130,28 +142,24 @@ namespace Parser {
 				return false;
 			}
 		}
-
 		private bool _K() {
 			if (this.tokens.Count == 0) return false;
-			if (this.tokens[0] == TK.TK_CONST) {
+			if (this.tokens[0] == TK.TK_CONST || this.tokens[0] == TK.TK_ID) {
 				this.tokens.RemoveAt(0);
 				return true;
 			} else {
 				return false;
 			}
 		}
-
 		private bool _X5() {
 			if (this.tokens.Count == 0) return false;
-			if (this.tokens[0] == TK.TK_RP) {
+			if (this.tokens[0] == TK.TK_RP ) {
 				this.tokens.RemoveAt(0);
 				return true;
 			} else {
 				return false;
 			}
 		}
-
-
 		// ==================================================
 		private bool _S() {
 			if (_A()) {
@@ -179,7 +187,6 @@ namespace Parser {
 			}
 			return false;
 		}
-
 		private bool _A() {
 			if (_B()) {
 				if (_a()) {
@@ -188,7 +195,6 @@ namespace Parser {
 			}
 			return false;
 		}
-
 		private bool _a() {
 			if (_X2()) {
 				if (_W2()) {
@@ -199,7 +205,6 @@ namespace Parser {
 			}
 			return false;
 		}
-
 		private bool _W2() {
 			if (_B()) {
 				if (_a()) {
@@ -208,7 +213,6 @@ namespace Parser {
 			}
 			return false;
 		}
-
 		private bool _B() {
 			if (_C()) {
 				if (_b()) {
@@ -217,7 +221,6 @@ namespace Parser {
 			}
 			return false;
 		}
-
 		private bool _b() {
 			if (_X3()) {
 				if (_W3()) {
@@ -236,7 +239,6 @@ namespace Parser {
 			}
 			return false;
 		}
-
 		private bool _C() {
 			if (_X4()) {
 				if (_W4()) {
@@ -247,7 +249,6 @@ namespace Parser {
 			}
 			return false;
 		}
-
 		private bool _W4() {
 			if (_S()) {
 				if (_X5()) {
@@ -257,4 +258,5 @@ namespace Parser {
 			return false;
 		}
 	}
+
 }

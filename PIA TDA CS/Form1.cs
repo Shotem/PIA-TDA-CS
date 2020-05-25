@@ -1,12 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 using System.IO;
@@ -18,8 +11,9 @@ namespace PIA_TDA_CS {
 		}
 
 		private void Form1_Load(object sender, EventArgs e) {
+			// For Testing purposes only
 			Parser.MathParser p = new Parser.MathParser();
-			/*
+			p.ids.Add("a1");
 			var test = new string[] {
 				"628+941^56-786",
 				"240-582-(514)",
@@ -41,26 +35,30 @@ namespace PIA_TDA_CS {
 				"((3-4)*(4-7)*(7-3))^(3*(4/7))+3(7-4)",
 				"1 +",
 				"16+4^()",
-				"8/0"
+				"8/0",
+				"1",
+				"a1"
 			};
 			foreach (var s in test) {
 				Console.WriteLine(p.Parse(s) + " " + s);
 			}
-			*/
+			
 		}
 
 		private void button1_Click(object sender, EventArgs e) {
-
+			var lines = primaryTextInput.Lines;
 			Regex validID = new Regex("[a-z][a-z0-9]*");
 			Regex validIDatEOL = new Regex("[a-z][a-z0-9]*;");
-			List<string> ids = new List<string>();
+			Parser.MathParser parser = new Parser.MathParser();
+			
 			bool declaredProgram = false;
 			bool startedProgram = false;
 			bool validLine;
 
-			foreach (string line in primaryTextInput.Lines) {
+
+			for (int i = 0; i < lines.Length; i++) {
 				validLine = false;
-				string[] tokens = line.Split(new char[]{ ' ' });
+				string[] tokens = primaryTextInput.Lines[i].Split(new char[]{ ' ' });
 
 				switch (tokens[0]) {
 					case "programa":
@@ -79,7 +77,9 @@ namespace PIA_TDA_CS {
 							if (!startedProgram) {
 								startedProgram = true;
 								if (tokens.Length == 1) {
-									
+									validLine = true;
+								} else {
+
 								}
 							} else {
 								// Syntax Error
@@ -94,18 +94,22 @@ namespace PIA_TDA_CS {
 
 					case "leer":
 						// do something
+						// verificar id y agregarla a p.ids (p.ids.Add([id]))
 						break;
 
 					case "imprimir":
 						// do something
+						// verificar que la id esté en p.ids (p.ids.Contains([id]))
 						break;
 
 					case "terminar.":
-						//if ()
+						
 						break;
 
 					default:
 						// asignación?
+						// verificar id asignada y agregarla a p.ids ( p.ids.Add([id]) ) si no está ya ahí
+						// El parser ya verifica que las ids de la expresión sean válidas y la manda a la lista de IDs
 						break;
 				}
 			}
