@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Parser {
-	class Parser {
+	class MathParser {
 		/* Gramática Independiente del Contexto
 		 * S  -> A S'
-		 * S' -> + W1 | - W1 | _
+		 * S' -> + W1 | - W1 | _	<-- (+ y - se juntaron en el program para utilizar menos funciones)
 		 * W1 -> A S'
 		 * A  -> B A'
-		 * A' -> * W2 | / W2 | _
+		 * A' -> * W2 | / W2 | _	<-- (* y / se juntaron en el program para utilizar menos funciones)
 		 * W2 -> B A'
 		 * B  -> C B'
 		 * B' -> ^ W3 | _
@@ -31,7 +31,7 @@ namespace Parser {
 		private List<TK> Tokenizer(string str) {
 			var tokenized = new List<TK>();
 			if (!str.Contains("  ")) {
-				if (!str.Contains("/0")) {
+				if (!str.Contains("/0") && !str.Contains("/ 0")) {
 					for (int i = 0; i < str.Length; i++) {
 						TK token = TK.TK_NULL;
 						str = str.Replace(" ", "");

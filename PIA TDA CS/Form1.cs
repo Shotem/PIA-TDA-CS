@@ -18,7 +18,8 @@ namespace PIA_TDA_CS {
 		}
 
 		private void Form1_Load(object sender, EventArgs e) {
-			Parser.Parser p = new Parser.Parser();
+			Parser.MathParser p = new Parser.MathParser();
+			/*
 			var test = new string[] {
 				"628+941^56-786",
 				"240-582-(514)",
@@ -39,11 +40,13 @@ namespace PIA_TDA_CS {
 				"3*((2*2)/2)",
 				"((3-4)*(4-7)*(7-3))^(3*(4/7))+3(7-4)",
 				"1 +",
-				"(16+4^()"
+				"16+4^()",
+				"8/0"
 			};
 			foreach (var s in test) {
 				Console.WriteLine(p.Parse(s) + " " + s);
 			}
+			*/
 		}
 
 		private void button1_Click(object sender, EventArgs e) {
