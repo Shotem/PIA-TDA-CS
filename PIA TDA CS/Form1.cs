@@ -6,13 +6,16 @@ using System.IO;
 
 namespace PIA_TDA_CS {
 	public partial class Form1 : Form {
+		private static Form1 form = null;
 		public Form1() {
 			InitializeComponent();
+			form = this;
 		}
 
 		private void Form1_Load(object sender, EventArgs e) {
 			// For Testing purposes only
-			Parser.MathParser p = new Parser.MathParser();
+			/*
+			PIA_TDA_CS.MathParser p = new PIA_TDA_CS.MathParser();
 			p.ids.Add("a1");
 			var test = new string[] {
 				"628+941^56-786",
@@ -41,78 +44,206 @@ namespace PIA_TDA_CS {
 			};
 			foreach (var s in test) {
 				Console.WriteLine(p.Parse(s) + " " + s);
-			}
+			}*/
+			//primaryTextOutput.Text = "";
 			
 		}
 
 		private void button1_Click(object sender, EventArgs e) {
 			var lines = primaryTextInput.Lines;
 			Regex validID = new Regex("[a-z][a-z0-9]*");
-			Regex validIDatEOL = new Regex("[a-z][a-z0-9]*;");
-			Parser.MathParser parser = new Parser.MathParser();
+			Regex validIDatEOL = new Regex("^[a-z][a-z0-9]*;$");
+			PIA_TDA_CS.MathParser parser = new PIA_TDA_CS.MathParser();
+
 			
 			bool declaredProgram = false;
 			bool startedProgram = false;
-			bool validLine;
+			bool valid = true;
+			string[] tokens;
+			primaryTextOutput.Text = "";
+
+			// Verificar Primera Linea
+			tokens = lines[0].Split(new char[] { ' ' });
+			
+			if (tokens[0] == "programa") {
+				if (tokens.Length == 2) {
+					if (validIDatEOL.IsMatch(tokens[1])) {
+						declaredProgram = true;
+					} else if (tokens[1].LastIndexOf(';') != tokens[1].Length - 1) {
+						Output($"Error de Sintaxis (linea 1): Se esperaba ';' al final de la linea");
+					} else {
+						Output($"Error de Sintaxis (linea 1): El nombre del programa es inválido");
+					}
+				} else if (tokens.Length == 0) {
+					Output($"Error de Sintaxis (linea 1): No puede haber lineas vacías");
+				} else if (tokens.Length < 2) {
+					Output($"Error de Sintaxis (linea 1): Se esperaba nombre del programa");
+				} else {
+					Output($"");
+				}
+			} else {
+				Output($"Error de Léxico (linea 1): Se esperaba \"programa\", pero se encontró \"{tokens[0]}\"");
+			}
+
+			// Verificar Segunda Linea
+			tokens = lines[1].Split(new char[] { ' ' });
+			if (tokens[0] == "iniciar") {
+				if (tokens.Length == 1) {
+					startedProgram = true;
+				} else if (tokens.Length < 1) {
+					Output($"Error de Sintaxis (linea 2): Se esperaba nombre del programa, pero se encontró {tokens[0]}");
+				} else {
+					
+				}
+			} else {
+				Output($"Error de Léxico (linea 2): Se esperaba iniciar, pero se encontró {tokens[0]}");
+			}
+
+			if (declaredProgram && startedProgram) {
+				for (int i = 2; i < lines.Length-1; i++) {
+					valid = true;
+					tokens = primaryTextInput.Lines[i].Split(new char[] { ' ' });
+					string str;
+					parser.line = i + 1;
 
 
-			for (int i = 0; i < lines.Length; i++) {
-				validLine = false;
-				string[] tokens = primaryTextInput.Lines[i].Split(new char[]{ ' ' });
+					switch (tokens[0]) {
+						case "programa":
+							Output($"Error de Sintaxis (linea {i + 1}): El programa ya ha sido definido");
+							valid = false;
 
-				switch (tokens[0]) {
-					case "programa":
-						if (!declaredProgram) {
-							declaredProgram = true;
-							if (validIDatEOL.IsMatch(tokens[1])) {
-								validLine = true;
-							}
-						} else {
-							Console.WriteLine("Syntax Error: Program was aready defined");
-						}
-						break;
+							break;
 
-					case "iniciar":
-						if (declaredProgram) {
-							if (!startedProgram) {
-								startedProgram = true;
-								if (tokens.Length == 1) {
-									validLine = true;
+						case "iniciar":
+							if (declaredProgram) {
+								if (!startedProgram) {
+									startedProgram = true;
+									if (!new Regex("^iniciar$").IsMatch(lines[i])) {
+										Output($"Error de Sintaxis (linea {i + 1}): Linea Inválida (debe ser de la forma \"iniciar\"");
+										valid = false;
+									}
 								} else {
-
+									// Syntax Error
+									Output($"Error de Sintaxis (linea {i + 1}): El programa ya había iniciado");
+									valid = false;
 								}
 							} else {
 								// Syntax Error
-								Console.WriteLine("Syntax Error: Program was already started");
+								Output($"Error de Sintaxis (linea {i + 1}): No se ha declarado el programa");
+								Output($"\tIntente declarar el programa usando \"programa [nombre]\"");
+								valid = false;
 							}
-						} else {
-							// Syntax Error
-							Console.WriteLine("No se ha declarado el programa");
-						}
 
-						break;
+							break;
 
-					case "leer":
-						// do something
-						// verificar id y agregarla a p.ids (p.ids.Add([id]))
-						break;
+						case "leer":
+							if (declaredProgram) {
+								if (startedProgram) {
+									
+									// verificar id y agregarla a p.ids (parser.ids.Add([id]))
 
-					case "imprimir":
-						// do something
-						// verificar que la id esté en p.ids (p.ids.Contains([id]))
-						break;
+								} else {
+									Output($"Error de Sintaxis (linea {i + 1}): No se ha iniciado el programa");
+									Output("\tIntente iniciar el programa usando \"iniciar\"");
+									valid = false;
+								}
+							} else {
+								Output($"Error de Sintaxis (linea {i + 1}): No se ha declarado el programa");
+								Output("\tIntente declarar el programa usando \"programa [nombre]\"");
+								valid = false;
+							}
+							break;
 
-					case "terminar.":
-						
-						break;
+						case "imprimir":
+							if (declaredProgram) {
+								if (startedProgram) {
+									// verificar que la id esté en p.ids (parser.ids.Contains([id]))
 
-					default:
-						// asignación?
-						// verificar id asignada y agregarla a p.ids ( p.ids.Add([id]) ) si no está ya ahí
-						// El parser ya verifica que las ids de la expresión sean válidas y la manda a la lista de IDs
-						break;
+								} else {
+									Output($"Error de Sintaxis (linea {i + 1}): No se ha iniciado el programa");
+									Output("\tIntente iniciar el programa usando \"iniciar\"");
+									valid = false;
+								}
+							} else {
+								Output($"Error de Sintaxis (linea {i + 1}): No se ha declarado el programa");
+								Output($"\tIntente declarar el programa usando \"programa [nombre]\"");
+								valid = false;
+							}
+							break;
+
+						case "terminar.":
+							if (declaredProgram) {
+								if (startedProgram) {
+									// veificar que no haya más cosas en la linea 
+									if (!new Regex("^terminar.$").IsMatch(lines[i])) {
+										Output($"Error de Sintaxis (linea {i + 1}): Linea Inválida (debe ser de la forma \"terminar.\"");
+										valid = false;
+									}
+
+								} else {
+									Output($"Error de Sintaxis (linea {i + 1}): No se ha iniciado el programa");
+									Output("\tIntente iniciar el programa usando \"iniciar\"");
+									valid = false;
+								}
+							} else {
+								Output($"Error de Sintaxis (linea {i + 1}): No se ha declarado el programa");
+								Output("\tIntente declarar el programa usando \"programa [nombre]\"");
+								valid = false;
+							}
+							break;
+
+						default:
+							if (new Regex("^[a-z][a-z0-9]*\\s?:=[\\s?a-z0-9+\\-*/^()]*[a-z0-9+\\-*/^()];$").IsMatch(lines[i])) { // asignación?
+								if (declaredProgram) {
+									if (startedProgram) {
+										var line = lines[i];
+										string id;
+										
+										id = line.Remove(line.IndexOf(":"));
+
+										id = id.TrimEnd();
+										Console.WriteLine(id);
+										
+										if (!parser.ids.Contains(id)) {
+											parser.ids.Add(id);
+										}
+										
+										var ex = line.Substring(line.IndexOf("=") + 1, line.IndexOf(";") - line.IndexOf("=") - 1);
+										if (!parser.Parse(ex)) {
+											Output($"Expresión inválida (linea {i+1}): {ex}");
+										}
+
+										// verificar id asignada y agregarla a parser.ids ( parser.ids.Add([id]) ) si no está ya ahí
+										// El parser ya verifica que las ids de la expresión sean válidas y la manda a la lista de IDs
+										// El parser ya verifica que no haya dobles espacios
+										// El parser ya verifica que no haya "/0" o "/ 0"
+
+									} else {
+
+										Output($"Error de Sintaxis (linea {i + 1}): No se ha iniciado el programa");
+										Output("\tIntente iniciar el programa usando \"iniciar\"");
+										valid = false;
+									}
+								} else {
+									Output($"Error de Sintaxis (linea {i + 1}): No se ha declarado el programa");
+									Output("\tIntente declarar el programa usando \"programa [nombre]\"");
+									valid = false;
+								}
+							} else {
+								Output($"Error de Sintáxis (linea {i + 1}): Linea inválida");
+								valid = false;
+							}
+
+							break;
+					}
 				}
+			} else {
+				valid = false;
 			}
+			
+			// Verificar última línea
+
+			Output((valid ? "Programa válido" : "Programa inválido"));
 		}
 
 		private void button2_Click(object sender, EventArgs e) {
@@ -141,6 +272,17 @@ namespace PIA_TDA_CS {
 
 		private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e) {
 
+		}
+
+		public static void Output(string str) {
+			form.primaryTextOutput.Text += str + Environment.NewLine;
+		}
+
+		private void primaryTextInput_TextChanged(object sender, EventArgs e) {
+			lineCount.Text = "";
+			for (int i = 1; i <= primaryTextInput.Lines.Length; i++) {
+				lineCount.Text += i.ToString() + Environment.NewLine;
+			}
 		}
 	}
 

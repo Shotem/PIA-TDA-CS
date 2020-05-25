@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Parser {
+namespace PIA_TDA_CS {
 	class MathParser {
 		/* Gramática Independiente del Contexto
 		 * S  -> A S'
@@ -22,6 +22,7 @@ namespace Parser {
 		private enum TK { TK_NULL, TK_PLUS, TK_MINUS, TK_STAR, TK_SLASH, TK_LP, TK_RP, TK_POW, TK_CONST, TK_ID };
 		private List<TK> tokens;
 		public List<string> ids = new List<string>(); // Si una ID no ha sido leída o asignada es un error de léxico
+		public int line;
 
 
 		public bool Parse(string str) {
@@ -77,6 +78,8 @@ namespace Parser {
 									if (this.ids.Contains(id)) {
 										token = TK.TK_ID;
 									} else {
+										
+										Form1.Output($"Error de léxico (linea {line}): ID inválida en la expresión ({id})");
 										token = TK.TK_NULL;
 									}
 									
@@ -85,24 +88,27 @@ namespace Parser {
 						}
 						tokenized.Add(token);
 						if (token == TK.TK_NULL) {
-							Console.WriteLine($"Syntax Error: Invalid Character in Math Expression ({str[i]})");
+							Form1.Output($"Error de sintáxis (linea {line}): Caracter inválido en la expresión ({str[i]})");
+							Form1.Output($"\tEn caso de ser una variable, verifique que se haya leído o se le haya asignado algo antes");
 							tokenized.Add(TK.TK_NULL);
 							// Syntax Error
 						}
 					}
 				} else {
-					Console.WriteLine("__(Syntax / Lexical)__ Error: Divided by Cero");
+					Form1.Output($"Excepción Matemática (linea {line}): División entre 0");
 					tokenized.Add(TK.TK_NULL);
 					// Syntax Error!
 				}
 			} else {
-				Console.WriteLine("Syntax Error: Double spaces somewhere in the string");
+				Form1.Output($"Error de sintáxis (linea {line}): Dos espacios en la expresión matemática");
+				
 				tokenized.Add(TK.TK_NULL);
 				// Syntax Error!
 			}
 
 			return tokenized;
 		}
+		
 
 		// ==================================================
 
@@ -148,6 +154,7 @@ namespace Parser {
 				this.tokens.RemoveAt(0);
 				return true;
 			} else {
+				Form1.Output($"Error de sintáxis (linea {line}): Se esperaba constante o identificador");
 				return false;
 			}
 		}
@@ -157,6 +164,7 @@ namespace Parser {
 				this.tokens.RemoveAt(0);
 				return true;
 			} else {
+				Form1.Output($"Error de sintáxis (linea {line}): Se esperaba cierre de paréntesis");
 				return false;
 			}
 		}
