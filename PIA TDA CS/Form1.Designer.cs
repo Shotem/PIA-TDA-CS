@@ -23,14 +23,16 @@
 		/// el contenido de este método con el editor de código.
 		/// </summary>
 		private void InitializeComponent() {
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
 			this.label1 = new System.Windows.Forms.Label();
-			this.primaryTextInput = new System.Windows.Forms.TextBox();
 			this.button1 = new System.Windows.Forms.Button();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+			this.primaryTextInput = new System.Windows.Forms.RichTextBox();
 			this.primaryTextOutput = new System.Windows.Forms.TextBox();
+			this.lineCount = new System.Windows.Forms.TextBox();
 			this.button2 = new System.Windows.Forms.Button();
 			this.label2 = new System.Windows.Forms.Label();
-			this.lineCount = new System.Windows.Forms.TextBox();
+			this.autocompleteMenu1 = new AutocompleteMenuNS.AutocompleteMenu();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -43,29 +45,11 @@
 			this.label1.TabIndex = 1;
 			this.label1.Text = "Programa";
 			// 
-			// primaryTextInput
-			// 
-			this.primaryTextInput.AutoCompleteCustomSource.AddRange(new string[] {
-            "programa",
-            "iniciar",
-            "terminar.",
-            "leer",
-            "imprimir"});
-			this.primaryTextInput.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-			this.primaryTextInput.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
-			this.primaryTextInput.Location = new System.Drawing.Point(36, 3);
-			this.primaryTextInput.Multiline = true;
-			this.primaryTextInput.Name = "primaryTextInput";
-			this.primaryTextInput.Size = new System.Drawing.Size(335, 221);
-			this.primaryTextInput.TabIndex = 2;
-			this.primaryTextInput.Text = "programa ejemplo;\r\niniciar\r\na:=0;\r\nb := 0;\r\nc := a + b;\r\nimprimir c;\r\nterminar.";
-			this.primaryTextInput.TextChanged += new System.EventHandler(this.primaryTextInput_TextChanged);
-			// 
 			// button1
 			// 
-			this.button1.Location = new System.Drawing.Point(36, 230);
+			this.button1.Location = new System.Drawing.Point(32, 181);
 			this.button1.Name = "button1";
-			this.button1.Size = new System.Drawing.Size(335, 32);
+			this.button1.Size = new System.Drawing.Size(292, 34);
 			this.button1.TabIndex = 3;
 			this.button1.Text = "Verificar Programa";
 			this.button1.UseVisualStyleBackColor = true;
@@ -76,21 +60,30 @@
 			this.tableLayoutPanel1.ColumnCount = 3;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 9.041096F));
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 90.9589F));
-			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 364F));
-			this.tableLayoutPanel1.Controls.Add(this.button2, 2, 1);
+			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 491F));
 			this.tableLayoutPanel1.Controls.Add(this.primaryTextInput, 1, 0);
-			this.tableLayoutPanel1.Controls.Add(this.button1, 1, 1);
 			this.tableLayoutPanel1.Controls.Add(this.primaryTextOutput, 2, 0);
 			this.tableLayoutPanel1.Controls.Add(this.lineCount, 0, 0);
+			this.tableLayoutPanel1.Controls.Add(this.button1, 1, 1);
+			this.tableLayoutPanel1.Controls.Add(this.button2, 1, 2);
 			this.tableLayoutPanel1.Location = new System.Drawing.Point(12, 25);
 			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-			this.tableLayoutPanel1.RowCount = 2;
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 85.97015F));
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 14.02985F));
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-			this.tableLayoutPanel1.Size = new System.Drawing.Size(739, 265);
+			this.tableLayoutPanel1.RowCount = 3;
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+			this.tableLayoutPanel1.Size = new System.Drawing.Size(819, 258);
 			this.tableLayoutPanel1.TabIndex = 4;
-			this.tableLayoutPanel1.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel1_Paint);
+			// 
+			// primaryTextInput
+			// 
+			this.autocompleteMenu1.SetAutocompleteMenu(this.primaryTextInput, this.autocompleteMenu1);
+			this.primaryTextInput.Location = new System.Drawing.Point(32, 3);
+			this.primaryTextInput.Name = "primaryTextInput";
+			this.primaryTextInput.Size = new System.Drawing.Size(292, 172);
+			this.primaryTextInput.TabIndex = 6;
+			this.primaryTextInput.Text = "";
+			this.primaryTextInput.TextChanged += new System.EventHandler(this.primaryTextInput_TextChanged);
 			// 
 			// primaryTextOutput
 			// 
@@ -100,33 +93,15 @@
             "terminar.",
             "leer",
             "imprimir"});
+			this.autocompleteMenu1.SetAutocompleteMenu(this.primaryTextOutput, null);
 			this.primaryTextOutput.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
 			this.primaryTextOutput.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
-			this.primaryTextOutput.Location = new System.Drawing.Point(377, 3);
+			this.primaryTextOutput.Location = new System.Drawing.Point(330, 3);
 			this.primaryTextOutput.Multiline = true;
 			this.primaryTextOutput.Name = "primaryTextOutput";
 			this.primaryTextOutput.ReadOnly = true;
-			this.primaryTextOutput.Size = new System.Drawing.Size(359, 221);
+			this.primaryTextOutput.Size = new System.Drawing.Size(485, 172);
 			this.primaryTextOutput.TabIndex = 5;
-			// 
-			// button2
-			// 
-			this.button2.Location = new System.Drawing.Point(377, 230);
-			this.button2.Name = "button2";
-			this.button2.Size = new System.Drawing.Size(359, 32);
-			this.button2.TabIndex = 4;
-			this.button2.Text = "Abrir Archivo";
-			this.button2.UseVisualStyleBackColor = true;
-			this.button2.Click += new System.EventHandler(this.button2_Click);
-			// 
-			// label2
-			// 
-			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(386, 9);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(103, 13);
-			this.label2.TabIndex = 5;
-			this.label2.Text = "Notas del analizador";
 			// 
 			// lineCount
 			// 
@@ -136,21 +111,49 @@
             "terminar.",
             "leer",
             "imprimir"});
+			this.autocompleteMenu1.SetAutocompleteMenu(this.lineCount, null);
 			this.lineCount.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
 			this.lineCount.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
 			this.lineCount.Location = new System.Drawing.Point(3, 3);
 			this.lineCount.Multiline = true;
 			this.lineCount.Name = "lineCount";
 			this.lineCount.ReadOnly = true;
-			this.lineCount.Size = new System.Drawing.Size(27, 221);
+			this.lineCount.Size = new System.Drawing.Size(23, 172);
 			this.lineCount.TabIndex = 6;
 			this.lineCount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			// 
+			// button2
+			// 
+			this.button2.Location = new System.Drawing.Point(32, 221);
+			this.button2.Name = "button2";
+			this.button2.Size = new System.Drawing.Size(292, 34);
+			this.button2.TabIndex = 4;
+			this.button2.Text = "Abrir Archivo";
+			this.button2.UseVisualStyleBackColor = true;
+			this.button2.Click += new System.EventHandler(this.button2_Click);
+			// 
+			// label2
+			// 
+			this.label2.AutoSize = true;
+			this.label2.Location = new System.Drawing.Point(340, 9);
+			this.label2.Name = "label2";
+			this.label2.Size = new System.Drawing.Size(103, 13);
+			this.label2.TabIndex = 5;
+			this.label2.Text = "Notas del analizador";
+			// 
+			// autocompleteMenu1
+			// 
+			this.autocompleteMenu1.Colors = ((AutocompleteMenuNS.Colors)(resources.GetObject("autocompleteMenu1.Colors")));
+			this.autocompleteMenu1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
+			this.autocompleteMenu1.ImageList = null;
+			this.autocompleteMenu1.Items = new string[0];
+			this.autocompleteMenu1.TargetControlWrapper = null;
 			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(763, 302);
+			this.ClientSize = new System.Drawing.Size(843, 295);
 			this.Controls.Add(this.label2);
 			this.Controls.Add(this.tableLayoutPanel1);
 			this.Controls.Add(this.label1);
@@ -166,13 +169,14 @@
 
 		#endregion
 		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.TextBox primaryTextInput;
 		private System.Windows.Forms.Button button1;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
 		private System.Windows.Forms.Button button2;
 		private System.Windows.Forms.TextBox primaryTextOutput;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.TextBox lineCount;
+		private System.Windows.Forms.RichTextBox primaryTextInput;
+		private AutocompleteMenuNS.AutocompleteMenu autocompleteMenu1;
 	}
 }
 
