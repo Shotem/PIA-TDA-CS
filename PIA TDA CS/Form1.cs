@@ -4,50 +4,19 @@ using System.Drawing;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using System.Threading.Tasks;
 using AutocompleteMenuNS;
 
 namespace PIA_TDA_CS {
 	public partial class Form1 : Form {
 		private static Form1 form = null;
+		
 		public Form1() {
 			InitializeComponent();
 			form = this;
 		}
-
+		
 		private void Form1_Load(object sender, EventArgs e) {
-			// For Testing purposes only
-			/*
-			PIA_TDA_CS.MathParser p = new PIA_TDA_CS.MathParser();
-			p.ids.Add("a1");
-			var test = new string[] {
-				"628+941^56-786",
-				"240-582-(514)",
-				"624*569/655^285*400",
-				"395^204+253",
-				"((925)^800-374+719)*132",
-				"(554)*938",
-				"827-(29)",
-				"607*66",
-				"(838*675/483)",
-				"634^994",
-				"(3/2)^(4/5)",
-				"(4-5)^(1/2)",
-				"(((1/2)-1)^(3/2))*((0-1)^(1/2)))",
-				"((0-1)^(0-1))^(1/2)",
-				"(2*(2-3))/(1-1)",
-				"(2-(4/2))^((3^(4*(1/2))-(18/2))",
-				"3*((2*2)/2)",
-				"((3-4)*(4-7)*(7-3))^(3*(4/7))+3(7-4)",
-				"1 +",
-				"16+4^()",
-				"8/0",
-				"1",
-				"a1"
-			};
-			foreach (var s in test) {
-				Console.WriteLine(p.Parse(s) + " " + s);
-			}*/
-
 			autocompleteMenu1.AutoPopup = true;
 			autocompleteMenu1.Items = new string[]{ "programa", "iniciar", "leer", "imprimir", "terminar."};
 			primaryTextInput.Text = "programa ejemplo;" + Environment.NewLine +
@@ -57,10 +26,16 @@ namespace PIA_TDA_CS {
 				"c := a + b;" + Environment.NewLine +
 				"imprimir c;" + Environment.NewLine +
 				"terminar.";
-			
+			primaryTextInput.Select();
+			var info = new Form2();
+			info.Show(this);
 		}
 
 		private void button1_Click(object sender, EventArgs e) {
+			verifyProgram();
+		}
+
+		void verifyProgram() {
 			var lines = primaryTextInput.Lines;
 			Regex validID = new Regex("[a-z][a-z0-9]*");
 			Regex validIDatEOL = new Regex("^[a-z][a-z0-9]*;$");
@@ -82,16 +57,20 @@ namespace PIA_TDA_CS {
 				Output($"\tiniciar");
 				Output($"\tterminar.");
 				valid = false;
-			} else { 
+			} else {
 				// Verificar Primera Linea
 				if (lines[0] == "") {
 					Output($"Error de sintaxis (linea 1): No puede haber lineas vacías");
+					valid = false;
+				} else if (lines[0].Contains("  ")) {
+					Output($"Error de sintaxis (linea 1): No se admiten dobles espacios");
 					valid = false;
 				} else {
 					tokens = lines[0].Split(new char[] { ' ' });
 					if (tokens[0] == "programa") {
 						if (tokens.Length == 2) {
-							if (validIDatEOL.IsMatch(tokens[1])) {
+							if (new Regex("^[a-z][a-z0-9]*\\s?;$").IsMatch(tokens[1])) {
+								parser.programName = tokens[1].Substring(0, tokens[1].Length - 1);
 								declaredProgram = true;
 							} else if (tokens[1].LastIndexOf(';') != tokens[1].Length - 1) {
 								Output($"Error de sintaxis (linea 1): Se esperaba ';' al final de la linea");
@@ -100,21 +79,31 @@ namespace PIA_TDA_CS {
 								Output($"Error de sintaxis (linea 1): El nombre del programa es inválido");
 								valid = false;
 							}
+						} else if (tokens.Length == 3) {
+							if (new Regex("^[a-z][a-z0-9]*$").IsMatch(tokens[1]) && tokens[2] == ";") {
+								parser.programName = tokens[1];
+								declaredProgram = true;
+							} else if (tokens[1].LastIndexOf(';') != lines[0].Length - 1) {
+								Output($"Error de sintaxis (linea 1): Se esperaba ';' al final de la linea");
+								valid = false;
+							} else {
+								Output($"Error de sintaxis (linea 1): El nombre del programa es inválido y/o se determina dos veces en la misma linea");
+								valid = false;
+							}
 						} else if (tokens.Length < 2) {
 							Output($"Error de sintaxis (linea 1): Se esperaba nombre del programa");
 							valid = false;
 						} else {
-							Output($"");
-							valid = false;
+
 						}
 					} else {
 						Output($"Error de léxico (linea 1): Se esperaba \"programa\", pero se encontró \"{tokens[0]}\"");
 					}
 				}
-				
+
 
 				// Verificar Segunda Linea
-				if (lines[0] == "") {
+				if (lines[1] == "") {
 					Output($"Error de sintaxis (linea 2): No puede haber lineas vacías");
 					valid = false;
 				} else {
@@ -122,20 +111,48 @@ namespace PIA_TDA_CS {
 					if (tokens[0] == "iniciar") {
 						if (tokens.Length == 1) {
 							startedProgram = true;
-						} else {
-							Output($"Error de Sintaxis (linea 2): Linea inválida. Se esperaba solo \"iniciar\"");
+						} else if (tokens.Length < 1) {
+							Output($"Error de léxico (linea 2): Se esperaba \"iniciar\", pero se encontró \"{tokens[0]}\"");
 							valid = false;
+						} else {
+								Output($"Error de sintaxis (linea 2): Linea inválida. Se esperaba solamente \"iniciar\"");
+								Output($"\tVerifique que no haya espacios después de la instrucción \"iniciar.\"");
+								valid = false;
 						}
 					} else {
-						Output($"Error de Léxico (linea 2): Se esperaba \"iniciar\", pero se encontró \"{tokens[0]}\"");
+						Output($"Error de léxico (linea 2): Se esperaba \"iniciar\", pero se encontró \"{tokens[0]}\"");
 						valid = false;
 					}
 				}
-				
+				/*
+				 if (lines[lines.Length - 1] == "") {
+					Output($"Error de sintaxis (linea {lines.Length}): No puede haber lineas vacías");
+					valid = false;
+				} else {
+					tokens = lines[lines.Length - 1].Split(new char[] { ' ' });
+					if (tokens[0] == "terminar.") {
+						if (tokens.Length == 1) {
+							startedProgram = true;
+						} else if (tokens.Length < 1) {
+							Output($"Error de sintaxis (linea {lines.Length}): Se esperaba nombre del programa, pero se encontró \"{tokens[0]}\"");
+							valid = false;
+						} else if (tokens.Length > 1) {
+							Output($"Error de sintaxis (linea {lines.Length}): Linea inválida. Se esperaba solamente \"terminar.\"");
+							Output($"\tVerifique que no haya espacios después de la instrucción \"terminar.\"");
+							valid = false;
+						}
+					} else {
+						Output($"Error de léxico (linea {lines.Length}): Se esperaba \"terminar.\", pero se encontró \"{tokens[0]}\"");
+						valid = false;
+					}
+				}
+				 */
+
 
 				// Verificar leer, escribir, asignar
 				if (declaredProgram && startedProgram) {
 					for (int i = 2; i < lines.Length - 1; i++) {
+						string line = "", id = "";
 
 						tokens = lines[i].Split(new char[] { ' ' });
 						parser.line = i + 1;
@@ -155,150 +172,216 @@ namespace PIA_TDA_CS {
 									break;
 
 								case "leer":
-									if (declaredProgram) {
-										if (startedProgram) {
+									line = lines[i];
 
-											var line = lines[i];
+									if (tokens.Length >= 2) {
+										if (line.Contains("  ")) {
+											Output($"Error de sintaxis (linea {i + 1}): No se admiten dobles espacios");
+											valid = false;
+										} else if (tokens.Length == 2) {
+											if (new Regex("^[a-z][a-z0-9]*\\s?;$").IsMatch(tokens[1])) {
 
-											if (line.Contains("  ")) {
-												Output($"Error de sintaxis (linea {line}): No se admiten dobles espacios");
-												valid = false;
-											} else if (tokens[1].LastIndexOf(';') != tokens[1].Length - 1) {
-												Output($"Error de sintaxis (linea {i + 1}): Se esperaba ';' al final de la linea");
-												valid = false;
-											} else {
-												string id;
-
-												id = line.Substring(line.IndexOf(" "), line.IndexOf(";") - line.IndexOf(" "));
-
-												id = id.Trim();
-
+												id = (tokens[1].Substring(0, tokens[1].Length - 1));
 												if (parser.reserved.Contains(id)) {
 													Output($"Error de léxico (linea {i + 1}): No se puede usar palabras reservadas como identificador");
+													valid = false;
+												} else if (parser.programName == id) {
+													Output($"Error de léxico (linea {i + 1}): No se puede usar el nombre del programa como identificador");
 													valid = false;
 												} else if (!parser.ids.Contains(id)) {
 													parser.ids.Add(id);
 												}
-											}
-											
-
-										} else {
-											Output($"Error de sintaxis (linea {i + 1}): No se ha iniciado el programa");
-											Output("\tIntente iniciar el programa usando \"iniciar\"");
-											valid = false;
-										}
-									} else {
-										Output($"Error de sintaxis (linea {i + 1}): No se ha declarado el programa");
-										Output("\tIntente declarar el programa usando \"programa [nombre]\"");
-										valid = false;
-									}
-									break;
-
-								case "imprimir":
-									if (declaredProgram) {
-										if (startedProgram) {
-											// verificar que la id esté en p.ids (parser.ids.Contains([id]))
-											var line = lines[i];
-											string id;
-											if (tokens[1].LastIndexOf(';') != tokens[1].Length - 1) {
+											} else if (tokens[1].LastIndexOf(';') != tokens[1].Length - 1) {
 												Output($"Error de sintaxis (linea {i + 1}): Se esperaba ';' al final de la linea");
 												valid = false;
 											} else {
-												id = line.Substring(line.IndexOf(" "), line.IndexOf(";") - line.IndexOf(" "));
-												id = id.Trim();
-
+												Output($"Error de sintaxis (linea {i + 1}): El identificador es inválido");
+												valid = false;
+											}
+										} else if (tokens.Length == 3) {
+											if (new Regex("^[a-z][a-z0-9]*$").IsMatch(tokens[1]) && tokens[2] == ";") {
+												id = tokens[1];
 												if (parser.reserved.Contains(id)) {
 													Output($"Error de léxico (linea {i + 1}): No se puede usar palabras reservadas como identificador");
 													valid = false;
-												} else if (!parser.ids.Contains(id)) {
-													Form1.Output($"Error de léxico (linea {i + 1}): ID inválida en la expresión ({id})");
+												} else if (parser.programName == id) {
+													Output($"Error de léxico (linea {i + 1}): No se puede usar el nombre del programa como identificador");
 													valid = false;
+												} else if (!parser.ids.Contains(id)) {
+													parser.ids.Add(id);
 												}
+											} else if (tokens[1].LastIndexOf(';') != tokens[1].Length - 1) {
+												Output($"Error de sintaxis (linea {i + 1}): Se esperaba ';' al final de la linea");
+												valid = false;
+											} else {
+												Output($"Error de sintaxis (linea {i + 1}): El identificador es inválido");
+												valid = false;
 											}
-											
-
-											
-
-										} else {
-											Output($"Error de sintaxis (linea {i + 1}): No se ha iniciado el programa");
-											Output("\tIntente iniciar el programa usando \"iniciar\"");
-											valid = false;
 										}
 									} else {
-										Output($"Error de sintaxis (linea {i + 1}): No se ha declarado el programa");
-										Output($"\tIntente declarar el programa usando \"programa [nombre]\"");
+										Output($"Error de sintaxis (linea {i + 1}): Se esperaba algo después de la instrucción \"leer\"");
 										valid = false;
 									}
+
+									/*if (tokens.Length >= 2) {
+										if (line.Contains("  ")) {
+											Output($"Error de sintaxis (linea {i + 1}): No se admiten dobles espacios");
+											valid = false;
+										} else if (tokens[1].LastIndexOf(';') != tokens[1].Length - 1) {
+											Output($"Error de sintaxis (linea {i + 1}): Se esperaba ';' al final de la linea");
+											valid = false;
+										} else {
+											string id;
+
+											id = line.Substring(line.IndexOf(" "), line.IndexOf(";") - line.IndexOf(" "));
+
+											id = id.Trim();
+
+											if (parser.reserved.Contains(id)) {
+												Output($"Error de léxico (linea {i + 1}): No se puede usar palabras reservadas como identificador");
+												valid = false;
+											} else if (id == parser.programName) {
+												Output($"Error de léxico (linea {i + 1}): No se puede usar el nombre del programa como identificador");
+												valid = false;
+											} else if (!parser.ids.Contains(id)) {
+												parser.ids.Add(id);
+											}
+										}
+									} else {
+										Output($"Error de sintaxis (linea {i + 1}): Se esperaba algo después de la instrucción \"leer\"");
+										valid = false;
+									}*/
+									break;
+
+								case "imprimir":
+									line = lines[i];
+
+									if (tokens.Length >= 2) {
+										if (line.Contains("  ")) {
+											Output($"Error de sintaxis (linea {i + 1}): No se admiten dobles espacios");
+											valid = false;
+										} else if (tokens.Length == 2) {
+											if (new Regex("^[a-z][a-z0-9]*\\s?;$").IsMatch(tokens[1])) {
+
+												id = (tokens[1].Substring(0, tokens[1].Length - 1));
+												if (parser.reserved.Contains(id)) {
+													Output($"Error de léxico (linea {i + 1}): No se puede usar palabras reservadas como identificador");
+													valid = false;
+												} else if (parser.programName == id) {
+													Output($"Error de léxico (linea {i + 1}): No se puede usar el nombre del programa como identificador");
+													valid = false;
+												} else if (!parser.ids.Contains(id)) {
+													Output($"Error de léxico (linea {i + 1}): El identificador no ha sido asigando o leído previamente");
+													valid = false;
+												}
+											} else if (tokens[1].LastIndexOf(';') != tokens[1].Length - 1) {
+												Output($"Error de sintaxis (linea {i + 1}): Se esperaba ';' al final de la linea");
+												valid = false;
+											} else {
+												Output($"Error de sintaxis (linea {i + 1}): El identificador es inválido");
+												valid = false;
+											}
+										} else if (tokens.Length == 3) {
+											if (new Regex("^[a-z][a-z0-9]*$").IsMatch(tokens[1]) && tokens[2] == ";") {
+												id = tokens[1];
+												if (parser.reserved.Contains(id)) {
+													Output($"Error de léxico (linea {i + 1}): No se puede usar palabras reservadas como identificador");
+													valid = false;
+												} else if (parser.programName == id) {
+													Output($"Error de léxico (linea {i + 1}): No se puede usar el nombre del programa como identificador");
+													valid = false;
+												} else if (!parser.ids.Contains(id)) {
+													Output($"Error de léxico (linea {i + 1}): El identificador no ha sido asigando o leído previamente");
+													valid = false;
+												}
+											} else if (tokens[1].LastIndexOf(';') != tokens[1].Length - 1) {
+												Output($"Error de sintaxis (linea {i + 1}): Se esperaba ';' al final de la linea");
+												valid = false;
+											} else {
+												Output($"Error de sintaxis (linea {i + 1}): El identificador es inválido");
+												valid = false;
+											}
+										}
+									} else {
+										Output($"Error de sintaxis (linea {i + 1}): Se esperaba algo después de la instrucción \"imprimir\"");
+										valid = false;
+									}
+									/*line = lines[i];
+									if (tokens.Length >= 2) {
+										if (line.Contains("  ")) {
+											Output($"Error de sintaxis (linea {line}): No se admiten dobles espacios");
+											valid = false;
+										} else if(tokens[1].LastIndexOf(';') != tokens[1].Length - 1) {
+											Output($"Error de sintaxis (linea {i + 1}): Se esperaba ';' al final de la linea");
+											valid = false;
+										} else {
+											id = line.Substring(line.IndexOf(" "), line.IndexOf(";") - line.IndexOf(" "));
+											id = id.Trim();
+
+											if (parser.reserved.Contains(id)) {
+												Output($"Error de léxico (linea {i + 1}): No se puede usar palabras reservadas como identificador");
+												valid = false;
+											} else if (id == parser.programName) {
+												Output($"Error de léxico (linea {i + 1}): No se puede usar el impromir el programa");
+												valid = false;
+											} else if (!parser.ids.Contains(id)) {
+												Form1.Output($"Error de léxico (linea {i + 1}): ID inválida en la expresión ({id})");
+												valid = false;
+											}
+										}
+									} else {
+										Output($"Error de sintaxis (linea {i + 1}): Se esperaba algo después de la instrucción \"imprimir\"");
+										valid = false;
+									}*/
 									break;
 
 								case "terminar.":
-									if (declaredProgram) {
-										if (startedProgram) {
-											// veificar que no haya más cosas en la linea 
-											if (!new Regex("^terminar.$").IsMatch(lines[i])) {
-												Output($"Error de sintaxis (linea {i + 1}): Linea Inválida (debe ser de la forma \"terminar.\"");
-												valid = false;
-											}
-
-										} else {
-											Output($"Error de sintaxis (linea {i + 1}): No se ha iniciado el programa");
-											Output("\tIntente iniciar el programa usando \"iniciar\"");
-											valid = false;
-										}
+									if (!new Regex("^terminar.$").IsMatch(lines[i])) {
+										Output($"Error de sintaxis (linea {i + 1}): Linea Inválida (debe ser de la forma \"terminar.\")");
+										valid = false;
 									} else {
-										Output($"Error de sintaxis (linea {i + 1}): No se ha declarado el programa");
-										Output("\tIntente declarar el programa usando \"programa [nombre]\"");
+										Output($"Error de sintaxis (linea {i + 1}): Aún quedan más lineas por analizar");
 										valid = false;
 									}
 									break;
 
 								default:
 									if (new Regex("^[a-z][a-z0-9]*\\s?:=[\\s?a-z0-9+\\-*/^()]*[a-z0-9+\\-*/^()]\\s?;$").IsMatch(lines[i])) { // asignación?
-										if (declaredProgram) {
-											if (startedProgram) {
-												var line = lines[i];
-												string id;
 
-												id = line.Remove(line.IndexOf(":"));
-
-												id = id.Trim();
-
-												if ( parser.reserved.Contains(id) ) {
-													Output($"Error de léxico (linea {i + 1}): No se puede usar palabras reservadas como identificador");
-													valid = false;
-												} else {
-
-													var ex = line.Substring(line.IndexOf("=") + 1, line.IndexOf(";") - line.IndexOf("=") - 1);
-													if (!parser.Parse(ex)) {
-														Output($"Expresión inválida (linea {i + 1}): {ex}");
-														valid = false;
-													}
-													if (!parser.ids.Contains(id)) {
-														parser.ids.Add(id);
-													}
-												}
-
-												// El parser ya verifica que las ids de la expresión sean válidas y la manda a la lista de IDs
-												// El parser ya verifica que no haya dobles espacios
-												// El parser ya verifica que no haya "/0" o "/ 0"
-
-											} else {
-
-												Output($"Error de sintaxis (linea {i + 1}): No se ha iniciado el programa");
-												Output("\tIntente iniciar el programa usando \"iniciar\"");
-												valid = false;
-											}
-										} else {
-											Output($"Error de sintaxis (linea {i + 1}): No se ha declarado el programa");
-											Output("\tIntente declarar el programa usando \"programa [nombre]\"");
+										line = lines[i];
+										id = line.Remove(line.IndexOf(":"));
+										id = id.Trim();
+										if (line.Contains("  ")) {
+											Output($"Error de sintaxis (linea {i + 1}): No se admiten dobles espacios");
 											valid = false;
+										} else if (parser.reserved.Contains(id)) {
+											Output($"Error de léxico (linea {i + 1}): No se puede usar palabras reservadas como identificador");
+											valid = false;
+										} else if (id == parser.programName) {
+											Output($"Error de léxico (linea {i + 1}): No se puede usar el nombre del programa como identificador");
+											valid = false;
+										} else {
+											var ex = line.Substring(line.IndexOf("=") + 1, line.IndexOf(";") - line.IndexOf("=") - 1);
+											if (!parser.Parse(ex)) {
+												Output($"Expresión inválida (linea {i + 1}): {ex}");
+												Output($"\tNo se guardará el identificador");
+												valid = false;
+											} else if (!parser.ids.Contains(id)) {
+												parser.ids.Add(id);
+											}
 										}
+
+										// El parser ya verifica que las ids de la expresión sean válidas y la manda a la lista de IDs
+										// El parser ya verifica que no haya dobles espacios en la expresión
+										// El parser ya verifica que no haya división entre 0
 									} else if (lines[i].LastIndexOf(';') != lines[i].Length - 1) {
 										Output($"Error de sintaxis (linea {i + 1}): Se esperaba ';' al final de la linea");
+										Output($"\tNo se guardará el identificador");
 										valid = false;
 									} else {
 										Output($"Error de Sintáxis (linea {i + 1}): Linea inválida");
 										Output($"\t{lines[i]}");
+										Output($"\tNo se guardará el identificador");
 										valid = false;
 									}
 									break;
@@ -311,7 +394,7 @@ namespace PIA_TDA_CS {
 
 				// Verificar última línea
 				if (lines[lines.Length - 1] == "") {
-					Output($"Error de Sintaxis (linea {lines.Length}): No puede haber lineas vacías");
+					Output($"Error de sintaxis (linea {lines.Length}): No puede haber lineas vacías");
 					valid = false;
 				} else {
 					tokens = lines[lines.Length - 1].Split(new char[] { ' ' });
@@ -319,10 +402,11 @@ namespace PIA_TDA_CS {
 						if (tokens.Length == 1) {
 							startedProgram = true;
 						} else if (tokens.Length < 1) {
-							Output($"Error de Sintaxis (linea {lines.Length}): Se esperaba nombre del programa, pero se encontró \"{tokens[0]}\"");
+							Output($"Error de léxico (linea {lines.Length}): Se esperaba \"terminar.\", pero se encontró \"{tokens[0]}\"");
 							valid = false;
 						} else if (tokens.Length > 1) {
-							Output($"Error de Sintaxis (linea {lines.Length}): Linea inválida. Se esperaba solo \"terminar.\"");
+							Output($"Error de sintaxis (linea {lines.Length}): Linea inválida. Se esperaba solamente \"terminar.\"");
+							Output($"\tVerifique que no haya espacios después de la instrucción \"terminar.\"");
 							valid = false;
 						}
 					} else {
@@ -330,10 +414,11 @@ namespace PIA_TDA_CS {
 						valid = false;
 					}
 				}
+				
 			}
-			
-
+			Output((valid ? "No se han encontrado errores" : ""));
 			Output((valid ? "Programa válido" : "Programa inválido"));
+
 		}
 
 		private void button2_Click(object sender, EventArgs e) {
@@ -392,9 +477,64 @@ namespace PIA_TDA_CS {
 				} while (index > -1);
 			}
 			primaryTextInput.Select(actual, 0);
+
+			if (checkBox1.Checked == true) {
+				verifyProgram();
+			}
+			
+		}
+
+		private void button3_Click(object sender, EventArgs e) {
+			primaryTextInput.Text = "";
+			primaryTextOutput.Text = "";
+		}
+
+		private void button4_Click(object sender, EventArgs e) {
+			primaryTextInput.Text = "programa programa1;" + Environment.NewLine +
+				"iniciar" + Environment.NewLine +
+				"(instrucciones)" + Environment.NewLine +
+				"terminar.";
+			primaryTextOutput.Text = "";
+		}
+
+		private void checkBox1_CheckedChanged(object sender, EventArgs e) {
+			if (checkBox1.Checked) {
+				verifyProgram();
+			}
+		}
+
+
+		private void button5_Click(object sender, EventArgs e) {
+			Form2 form2 = new Form2();
+			form2.Show(this);
+		}
+
+		private void primaryTextInput_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e) {
+			if (e.Control && e.KeyCode == Keys.Enter) {
+				bool a;
+
+				a = e.KeyData == Keys.Tab;
+				if (a) {
+					//e.SuppressKeyPress = true;
+				}
+
+			}
+		}
+
+		private void primaryTextInput_KeyDown(object sender, KeyEventArgs e) {
+			bool a;
+			a = e.KeyData == (Keys.Control | Keys.Enter);
+			if (a) {
+				verifyProgram();
+				e.SuppressKeyPress = true;
+			}
+
+			a = e.KeyData == (Keys.Control | Keys.Back);
+			if (a) {
+				primaryTextInput.Text = "";
+				primaryTextOutput.Text = "";
+				e.SuppressKeyPress = true;
+			}
 		}
 	}
-
 }
-
-
